@@ -1,0 +1,35 @@
+.prompt-container {
+    text-align: center;
+}
+
+.prompt-description {
+    position: relative;
+}
+
+.prompt-description input {
+    border-radius: 10px;
+    border: 1px gray solid;
+    box-shadow: 0 0 5px 1px gray;
+    height: 2.5em;
+    width: 300px;
+    padding: 1px 20px;
+}
+
+.prompt-description button {
+    position: absolute;
+    background-color: gray;
+    border-radius: 50%;
+    border: 1px black solid;
+    width: 2rem;
+    height: 2rem;
+    right: 2px;
+    bottom: 2px;
+}
+
+.prompt-media {
+    text-align: left;
+}
+.prompt-media span {
+    cursor: pointer;
+    margin: 0 10px 0 0;
+}

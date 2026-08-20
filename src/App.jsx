@@ -1,8 +1,14 @@
+import { UserPrompt } from "./components/UserPrompt";
+import { useFetch } from "./services/useFetch";
+
+import './index.css'
+
 export default function App() {
+  const { data } = useFetch("https://jsonplaceholder.typicode.com/posts/1")
+
   return (
-    <main style={{ fontFamily: 'sans-serif', textAlign: 'center', marginTop: '100px' }}>
-      <h1>Deployed to Vercel 🚀</h1>
-      <p>Your React template is running successfully.</p>
+    <main className="main-container">
+      <UserPrompt/>
     </main>
   );
 }
