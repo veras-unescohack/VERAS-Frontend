@@ -8,6 +8,7 @@ export default function App() {
 
   return (
     <main className="main-container">
+      <h1>VERAS</h1>
       <UserPrompt/>
     </main>
   );
