@@ -111,35 +111,73 @@ export default function App() {
         </form>
       ) : (
         /* Dashboard UI que reemplaza el formulario */
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-            <div>
-              <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>ID: {dashboardData.request_id}</span>
-              <h3 style={{ margin: '4px 0 0 0' }}>Resumen del Análisis</h3>
+          <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '24px', background: '#ffffff' }}>
+            {/* Encabezado */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>ID DE ANÁLISIS: {dashboardData.request_id}</span>
+                <h3 style={{ margin: '4px 0 0 0', color: '#0f172a' }}>Inspección y Alfabetización Mediática</h3>
+              </div>
+              <button
+                onClick={handleReset}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+                Nueva consulta
+              </button>
             </div>
-            <button
-              onClick={handleReset}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'none', border: '1px solid #ccc', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
-              Nuevo
-            </button>
+
+            {/* Resumen Objetivo */}
+            <section style={{ marginBottom: '24px' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>subject</span>
+                Resumen Objetivo
+              </h4>
+              <p style={{ lineHeight: '1.6', color: '#475569', margin: 0 }}>{dashboardData.neutral_summary}</p>
+            </section>
+
+            {/* Puntos de Análisis Crítico */}
+            <section style={{ marginBottom: '24px' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>find_in_page</span>
+                Factores de Análisis Crítico
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {dashboardData.critical_analysis_points.map((point, index) => (
+                  <div key={index} style={{ background: '#f8fafc', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>
+                    <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>{point.indicator}</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#475569', lineHeight: '1.5' }}>{point.observation}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Lección / Educación Mediática */}
+            <section style={{ marginBottom: '24px', background: '#f0fdf4', padding: '16px', borderRadius: '6px', border: '1px solid #dcfce7' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>school</span>
+                Criterio de Evaluación Futura
+              </h4>
+              <p style={{ lineHeight: '1.5', color: '#15803d', margin: 0, fontSize: '0.9rem' }}>{dashboardData.educational_insights}</p>
+            </section>
+
+            {/* Acciones Recomendadas */}
+            <section>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>checklist</span>
+                Ruta de Verificación y Seguridad
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                {dashboardData.recommended_actions.map((act, index) => (
+                  <div key={index} style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#2563eb', textTransform: 'uppercase' }}>{act.category}</span>
+                    <span style={{ fontSize: '0.88rem', color: '#334155' }}>{act.guideline}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
-
-          <section style={{ marginBottom: '20px' }}>
-            <p style={{ lineHeight: '1.6', color: '#374151' }}>{dashboardData.summary}</p>
-          </section>
-
-          <section>
-            <h4 style={{ margin: '0 0 10px 0' }}>Acciones Recomendadas</h4>
-            <ul style={{ paddingLeft: '20px', margin: 0, lineHeight: '1.6', color: '#374151' }}>
-              {dashboardData.recommended_actions.map((action, index) => (
-                <li key={index}>{action}</li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      )}
+        )}
     </div>
   );
 }

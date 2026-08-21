@@ -27,7 +27,7 @@ export default function StatusBadge({ apiUrl }) {
 
   useEffect(() => {
     checkHealth();
-    // const interval = setInterval(checkHealth, 15000);
+    const interval = setInterval(checkHealth, 60000);
     return () => clearInterval(interval);
   }, [apiUrl]);
 
