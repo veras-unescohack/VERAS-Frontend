@@ -1,0 +1,171 @@
+/* Navegación y Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.brand-icon {
+  font-size: 24px;
+  color: #2563eb;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s ease-in-out;
+}
+
+.nav-item:hover {
+  color: #0f172a;
+}
+
+.nav-item.active {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+
+/* Hero / About */
+.about-hero {
+  text-align: center;
+  padding: 30px 0 40px;
+}
+
+.hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  line-height: 1.25;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 580px;
+  margin: 0 auto 24px;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.primary-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #0f172a;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.secondary-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: transparent;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.secondary-cta-btn:hover {
+  background-color: #f8fafc;
+}
+
+/* Pilares About */
+.about-pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pillar-card {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.pillar-icon {
+  font-size: 24px;
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.pillar-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+}
+
+.pillar-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Placeholders */
+.placeholder-container {
+  text-align: center;
+  padding: 60px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.placeholder-icon {
+  font-size: 40px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.placeholder-container h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.35rem;
+}
+
+.placeholder-container p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
