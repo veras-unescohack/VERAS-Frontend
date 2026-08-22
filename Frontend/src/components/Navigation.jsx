@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import StatusBadge from './StatusBadge';
 
-export default function Navbar({ apiUrl }) {
+export default function Navigation({ apiUrl }) {
   return (
     <header className="app-header">
       <div className="header-left">
