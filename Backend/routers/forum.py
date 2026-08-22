@@ -1,28 +1,12 @@
-import os
 from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query, status
-from google import genai
-from google.genai import types
 from pydantic import BaseModel, Field
 from service.database import get_database
-from pathlib import Path
-from dotenv import load_dotenv
+from service.gemini import enrich_forum_post
 
 router = APIRouter(prefix="/forum", tags=["Forum"])
-
-# Cliente de Gemini
-dotenv_path = Path(__file__).resolve().parent.parent.parent / '.env'
-load_dotenv(dotenv_path=dotenv_path)
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Esquema para estructurar el post con Gemini
-class PostEnrichmentSchema(BaseModel):
-    title: str = Field(description="Título corto, descriptivo y neutral generado a partir del mensaje del usuario.")
-    summary: str = Field(description="Descripción u observación objetiva de 1 o 2 oraciones sobre el contenido.")
-    tags: List[str] = Field(description="Lista de 3 a 5 tags en minúsculas relevantes para clasificar el tema.")
 
 # Serializadores
 def post_serializer(post) -> dict:
@@ -97,28 +81,8 @@ async def list_posts(
 async def create_post(payload: CreatePostDto):
     db = get_database()
 
-    # Enriquecer con Gemini 2.5 Flash
-    try:
-        config = types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=PostEnrichmentSchema,
-            system_instruction="Analiza el mensaje del usuario. Genera un título neutral conciso, un resumen objetivo (sin emitir juicios) y 3-5 tags clave en minúsculas.",
-            temperature=0.2
-        )
-        ai_res = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=[payload.content],
-            config=config
-        )
-        enriched = PostEnrichmentSchema.model_validate_json(ai_res.text)
-    except Exception:
-        # Fallback de seguridad en caso de fallo de red/API
-        enriched = PostEnrichmentSchema(
-            title=payload.content[:50] + "...",
-            summary=payload.content[:150] + "...",
-            tags=["comunidad", "debate"]
-        )
-
+    # Llamada al servicio desacoplado de Gemini
+    enriched = enrich_forum_post(payload.content)
     cleaned_tags = [t.strip().lower().replace("#", "") for t in enriched.tags if t.strip()]
 
     doc = {
