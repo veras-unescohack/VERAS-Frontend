@@ -11,6 +11,8 @@ router = APIRouter(
     tags=['breakdown']
 )
 
+MAX_FILE_SIZE_BYTES = 6 * 1024 * 1024  # 6 M
+
 # Respuesta enviada al Frontend
 class BreakdownResponse(BaseModel):
     request_id: str
@@ -23,7 +25,7 @@ class BreakdownResponse(BaseModel):
 
 @router.post("/", response_model=BreakdownResponse)
 async def process_breakdown(
-    prompt: str = Form(...),
+    prompt: str = Form(..., max_length=5000),
     file: Optional[UploadFile] = File(None)
 ):
     req_id = str(uuid.uuid4())
@@ -38,7 +40,15 @@ async def process_breakdown(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Formato no soportado: {file.content_type}. Use JPG, PNG o PDF."
             )
+
         file_bytes = await file.read()
+        # Validación de tamaño estricta
+        if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="El archivo excede el tamaño máximo permitido de 6 MB."
+            )
+
         mime_type = file.content_type
         has_media = True
 

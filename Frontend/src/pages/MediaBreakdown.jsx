@@ -1,19 +1,48 @@
 import React, { useState } from 'react';
 import StatusBadge from './../components/StatusBadge';
 import './../styles/breakdown.css';
+import { processAndValidateFile } from '../utils/fileCompressor';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function MediaBreakdown() {
   const [prompt, setPrompt] = useState('');
   const [file, setFile] = useState(null);
+  const [processingFile, setProcessingFile] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
 
+  const handleFileChange = async (e) => {
+    const rawFile = e.target.files[0];
+    if (!rawFile) {
+      setFile(null);
+      return;
+    }
+
+    setProcessingFile(true);
+    setErrorMsg('');
+
+    try {
+      // Comprime imágenes a 1280px max / 75% calidad, o valida PDF <= 5MB
+      const optimized = await processAndValidateFile(rawFile, {
+        maxImageDimension: 1280,
+        quality: 0.75,
+        maxPdfSizeMB: 5
+      });
+      setFile(optimized);
+    } catch (err) {
+      setErrorMsg(err.message);
+      setFile(null);
+      e.target.value = ''; // Reset input
+    } finally {
+      setProcessingFile(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || processingFile) return;
 
     setLoading(true);
     setErrorMsg('');
@@ -76,7 +105,7 @@ export default function MediaBreakdown() {
               <input
                 type="file"
                 accept=".png, .jpg, .jpeg, .pdf"
-                onChange={(e) => setFile(e.target.files[0] || null)}
+                onChange={handleFileChange}
                 className="file-input-hidden"
                 disabled={loading}
               />
