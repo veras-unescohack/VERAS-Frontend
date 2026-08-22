@@ -41,7 +41,6 @@
   color: #64748b;
   font-size: 0.9rem;
   font-weight: 500;
-  padding: 4px 8px;
   border-radius: 4px;
   transition: color 0.15s ease-in-out;
 }
@@ -69,7 +68,7 @@
     left: 0;
     justify-content: space-around;
     align-items: center;
-    height: 50px;
+    height: 75px;
   }
 
   .nav-item.active {
@@ -81,7 +80,9 @@
     display: none;
     display: inline-block;
     height: 45px;
+    width: 45px;
     line-height: 45px;
+    text-align: center;
   }
 
   .nav-text {
