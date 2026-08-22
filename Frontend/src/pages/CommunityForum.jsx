@@ -1,24 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from '../components/AuthModal';
 import '../styles/forum.css';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+const rawUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const API_URL = rawUrl.replace(/\/+$/, '');
 
 export default function CommunityForum() {
+  const { token, isAuthenticated } = useAuth();
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [postDetail, setPostDetail] = useState(null);
-  
+
   // Filtros y paginación
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
-  
-  // Formularios simplificados
+
+  // Estados de formularios y modal de autenticación
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newPost, setNewPost] = useState({ author: '', content: '' });
-  const [newComment, setNewComment] = useState({ author: '', text: '' });
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [newContent, setNewContent] = useState('');
+  const [newCommentText, setNewCommentText] = useState('');
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -33,7 +39,7 @@ export default function CommunityForum() {
         setHasNext(data.has_next);
       }
     } catch (err) {
-      console.error("Error al cargar posts:", err);
+      console.error('Error al cargar posts:', err);
     } finally {
       setLoading(false);
     }
@@ -49,7 +55,7 @@ export default function CommunityForum() {
         setSelectedPostId(id);
       }
     } catch (err) {
-      console.error("Error al obtener detalle del post:", err);
+      console.error('Error al obtener detalle del post:', err);
     } finally {
       setLoading(false);
     }
@@ -67,26 +73,46 @@ export default function CommunityForum() {
     fetchPosts();
   };
 
+  const handleOpenCreateModal = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+    setShowCreateModal(true);
+  };
+
   const handleCreatePost = async (e) => {
     e.preventDefault();
-    if (!newPost.author.trim() || !newPost.content.trim()) return;
+    if (!newContent.trim()) return;
+
+    if (!isAuthenticated) {
+      setShowCreateModal(false);
+      setShowAuthModal(true);
+      return;
+    }
 
     setCreating(true);
     try {
       const res = await fetch(`${API_URL}/forum/posts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPost)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newContent.trim() })
       });
 
       if (res.ok) {
         setShowCreateModal(false);
-        setNewPost({ author: '', content: '' });
+        setNewContent('');
         setPage(1);
         fetchPosts();
+      } else if (res.status === 401) {
+        setShowCreateModal(false);
+        setShowAuthModal(true);
       }
     } catch (err) {
-      console.error("Error al crear post:", err);
+      console.error('Error al crear post:', err);
     } finally {
       setCreating(false);
     }
@@ -101,41 +127,51 @@ export default function CommunityForum() {
       });
       if (res.ok) {
         const data = await res.json();
-        setPostDetail(prev => ({ ...prev, upvotes: data.upvotes }));
+        setPostDetail((prev) => ({ ...prev, upvotes: data.upvotes }));
       }
     } catch (err) {
-      console.error("Error al votar:", err);
+      console.error('Error al votar:', err);
     }
   };
 
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!newComment.author.trim() || !newComment.text.trim()) return;
+    if (!newCommentText.trim()) return;
+
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/forum/posts/${selectedPostId}/comments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newComment)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: newCommentText.trim() })
       });
 
       if (res.ok) {
         const createdComment = await res.json();
-        setPostDetail(prev => ({
+        setPostDetail((prev) => ({
           ...prev,
-          comments: [...prev.comments, createdComment],
-          comments_count: prev.comments_count + 1
+          comments: [...(prev.comments || []), createdComment],
+          comments_count: (prev.comments_count || 0) + 1
         }));
-        setNewComment({ author: '', text: '' });
+        setNewCommentText('');
+      } else if (res.status === 401) {
+        setShowAuthModal(true);
       }
     } catch (err) {
-      console.error("Error al agregar comentario:", err);
+      console.error('Error al agregar comentario:', err);
     }
   };
 
   return (
     <div className="forum-container">
-      {/* VISTA 1: LISTADO */}
+      {/* VISTA 1: LISTADO DE THREADS */}
       {!selectedPostId ? (
         <>
           <form onSubmit={handleSearchSubmit} className="forum-search-box">
@@ -150,7 +186,7 @@ export default function CommunityForum() {
           </form>
 
           <div className="forum-controls">
-            <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+            <button onClick={handleOpenCreateModal} className="btn-primary">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
               Crear Thread
             </button>
@@ -166,7 +202,7 @@ export default function CommunityForum() {
                 posts.map((post) => (
                   <div key={post.id} className="thread-card">
                     <div className="thread-header">
-                      <span className="thread-meta">Iniciado por <b>{post.author}</b></span>
+                      <span className="thread-meta">Iniciado por <b>@{post.author}</b></span>
                     </div>
 
                     <h3 className="thread-title">{post.title}</h3>
@@ -211,7 +247,11 @@ export default function CommunityForum() {
       ) : (
         /* VISTA 2: DETALLE, UPVOTES Y COMENTARIOS */
         <div className="thread-detail-container">
-          <button onClick={() => { setSelectedPostId(null); setPostDetail(null); }} className="btn-secondary" style={{ width: 'fit-content' }}>
+          <button
+            onClick={() => { setSelectedPostId(null); setPostDetail(null); }}
+            className="btn-secondary"
+            style={{ width: 'fit-content' }}
+          >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
             Volver al foro
           </button>
@@ -221,7 +261,7 @@ export default function CommunityForum() {
               <div className="detail-main-card">
                 <div className="detail-header-row">
                   <div>
-                    <span className="thread-meta">Iniciado por <b>{postDetail.author}</b></span>
+                    <span className="thread-meta">Iniciado por <b>@{postDetail.author}</b></span>
                     <h2 style={{ margin: '6px 0 10px 0', color: '#0f172a' }}>{postDetail.title}</h2>
                   </div>
                   <button onClick={handleUpvote} className="upvote-btn" title="Apoyar hilo">
@@ -249,19 +289,11 @@ export default function CommunityForum() {
                 </h3>
 
                 <form onSubmit={handleAddComment} className="comment-form">
-                  <input
-                    type="text"
-                    placeholder="Tu nombre o alias..."
-                    value={newComment.author}
-                    onChange={(e) => setNewComment({ ...newComment, author: e.target.value })}
-                    className="modal-input"
-                    required
-                  />
                   <textarea
                     rows="3"
-                    placeholder="Añadir una respuesta o aportar fuentes..."
-                    value={newComment.text}
-                    onChange={(e) => setNewComment({ ...newComment, text: e.target.value })}
+                    placeholder={isAuthenticated ? "Añadir una respuesta o aportar fuentes..." : "Inicia sesión para responder a este thread..."}
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
                     className="modal-textarea"
                     required
                   />
@@ -277,7 +309,7 @@ export default function CommunityForum() {
                   {postDetail.comments && postDetail.comments.length > 0 ? (
                     postDetail.comments.map((comment) => (
                       <div key={comment.id} className="comment-card">
-                        <div className="comment-author">{comment.author}</div>
+                        <div className="comment-author">@{comment.author}</div>
                         <p className="comment-text">{comment.text}</p>
                       </div>
                     ))
@@ -291,28 +323,20 @@ export default function CommunityForum() {
         </div>
       )}
 
-      {/* MODAL SIMPLIFICADO: NOMBRE + MENSAJE */}
+      {/* MODAL SIMPLIFICADO: SÓLO EL MENSAJE */}
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Iniciar Nuevo Thread</h3>
             <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <input
-                type="text"
-                placeholder="Tu nombre o alias..."
-                value={newPost.author}
-                onChange={(e) => setNewPost({ ...newPost, author: e.target.value })}
-                className="modal-input"
-                disabled={creating}
-                required
-              />
               <textarea
                 rows="5"
                 placeholder="Escribe tu mensaje, caso o información a debatir (Gemini generará el título, resumen y tags automáticamente)..."
-                value={newPost.content}
-                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
                 className="modal-textarea"
                 disabled={creating}
+                minLength={10}
                 required
               />
 
@@ -320,7 +344,7 @@ export default function CommunityForum() {
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn-secondary" disabled={creating}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary" disabled={creating || !newPost.author.trim() || !newPost.content.trim()}>
+                <button type="submit" className="btn-primary" disabled={creating || !newContent.trim()}>
                   {creating ? 'Procesando con IA...' : 'Publicar'}
                 </button>
               </div>
@@ -328,6 +352,9 @@ export default function CommunityForum() {
           </div>
         </div>
       )}
+
+      {/* MODAL DE LOGIN CUANDO SE INTENTA INTERACTUAR SIN SESIÓN */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

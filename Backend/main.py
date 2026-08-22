@@ -2,15 +2,18 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from routers.breakdown import router as breakdown_router
 from routers.forum import router as forum_router
+from routers.auth import router as auth_router
 
 app = FastAPI(title="VERAS API")
 app.include_router(breakdown_router)
 app.include_router(forum_router)
+app.include_router(auth_router)
 
 origins = [
     "https://veras-frontend.vercel.app",
-    "http://localhost:3000",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(

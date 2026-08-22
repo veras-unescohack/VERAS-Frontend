@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from service.database import get_database
 from service.gemini import enrich_forum_post
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/forum", tags=["Forum"])
 
@@ -37,12 +38,10 @@ def post_detail_serializer(post) -> dict:
 
 # Schemas de Entrada
 class CreatePostDto(BaseModel):
-    author: str = Field(..., min_length=2, max_length=50)
     content: str = Field(..., min_length=10)
 
 class CreateCommentDto(BaseModel):
-    author: str = Field(..., min_length=2, max_length=50)
-    text: str = Field(..., min_length=1, max_length=1000)
+    text: str = Field(..., min_length=10, max_length=1000)
 
 # Endpoints
 @router.get("/posts")
@@ -78,7 +77,7 @@ async def list_posts(
     }
 
 @router.post("/posts", status_code=status.HTTP_201_CREATED)
-async def create_post(payload: CreatePostDto):
+async def create_post(payload: CreatePostDto, current_user: str = Depends(get_current_user)):
     db = get_database()
 
     # Llamada al servicio desacoplado de Gemini
@@ -86,7 +85,7 @@ async def create_post(payload: CreatePostDto):
     cleaned_tags = [t.strip().lower().replace("#", "") for t in enriched.tags if t.strip()]
 
     doc = {
-        "author": payload.author,
+        "author": current_user,
         "content": payload.content,
         "title": enriched.title,
         "summary": enriched.summary,
@@ -127,14 +126,14 @@ async def upvote_post(post_id: str):
     return {"upvotes": result.get("upvotes", 0)}
 
 @router.post("/posts/{post_id}/comments", status_code=status.HTTP_201_CREATED)
-async def add_comment(post_id: str, payload: CreateCommentDto):
+async def add_comment(post_id: str, payload: CreateCommentDto, current_user: str = Depends(get_current_user)):
     db = get_database()
     if not ObjectId.is_valid(post_id):
         raise HTTPException(status_code=400, detail="ID no válido")
     
     comment_data = {
         "_id": ObjectId(),
-        "author": payload.author,
+        "author": current_user,
         "text": payload.text,
         "created_at": datetime.utcnow()
     }
