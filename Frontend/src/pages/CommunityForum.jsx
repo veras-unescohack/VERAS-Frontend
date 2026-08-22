@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/Forum.css';
+import '../styles/forum.css';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
