@@ -12,17 +12,11 @@ export default function Navbar({ apiUrl }) {
         </Link>
 
         <nav className="nav-links">
-          <NavLink to="/" end className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-            About
-          </NavLink>
           <NavLink to="/breakdown" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
             Media Breakdown
           </NavLink>
           <NavLink to="/foro" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
             Foro
-          </NavLink>
-          <NavLink to="/guia-gobierno" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-            Guía de Gobierno
           </NavLink>
         </nav>
       </div>

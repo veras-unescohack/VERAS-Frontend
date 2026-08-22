@@ -32,14 +32,15 @@ export default function StatusBadge({ apiUrl }) {
   }, [apiUrl]);
 
   const config = {
-    checking: { text: "Comprobando servidor...", color: "#94a3b8", icon: "sync" },
-    waking: { text: "Despertando servidor (Render)...", color: "#f59e0b", icon: "hourglass_top" },
-    ready: { text: "Conectado", color: "#10b981", icon: "check_circle" },
-    error: { text: "No disponible", color: "#ef4444", icon: "error" }
+    checking: { text: "Checking...", color: "#94a3b8", icon: "sync" },
+    waking: { text: "Waking...", color: "#f59e0b", icon: "hourglass_top" },
+    ready: { text: "Connected", color: "#10b981", icon: "check_circle" },
+    error: { text: "Unavailable", color: "#ef4444", icon: "error" }
   }[status];
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: config.color }}>
+      <span style={{ fontSize: '10px', color: 'gray', width: '40px', textAlign: 'right', padding: '0 5px', borderRight: '1px gray solid'}}>Backend status</span>
       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{config.icon}</span>
       <span>{config.text}</span>
     </div>
