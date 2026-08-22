@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import StatusBadge from './../components/StatusBadge';
-import './../styles/breakdown.css';
 import { processAndValidateFile } from '../utils/fileCompressor';
+import './../styles/breakdown.css';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
