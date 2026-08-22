@@ -1,9 +1,11 @@
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-import routers.breakdown as breakdown
+from routers.breakdown import router as breakdown_router
+from routers.forum import router as forum_router
 
 app = FastAPI(title="VERAS API")
-app.include_router(breakdown.router)
+app.include_router(breakdown_router)
+app.include_router(forum_router)
 
 app.add_middleware(
     CORSMiddleware,
