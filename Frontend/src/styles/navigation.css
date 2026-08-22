@@ -1,3 +1,5 @@
+@import './index.css';
+
 /* Navegación y Header */
 .app-header {
   display: flex;
@@ -51,4 +53,38 @@
 .nav-item.active {
   color: #0f172a;
   background-color: #f1f5f9;
+}
+
+.nav-icon {
+  display: none;
+}
+
+/* Mobile accesibility */
+@media only screen and (max-width: 600px) {
+  .nav-links {
+    background-color: white;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    justify-content: space-around;
+    align-items: center;
+    height: 50px;
+  }
+
+  .nav-item.active {
+    color: #0f172a;
+    background-color: var(--primary-color);
+  }
+
+  .nav-icon {
+    display: none;
+    display: inline-block;
+    height: 45px;
+    line-height: 45px;
+  }
+
+  .nav-text {
+    display: none;
+  }
 }

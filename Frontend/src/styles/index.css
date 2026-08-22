@@ -1,0 +1,13 @@
+:root {
+    --primary-color: #6599FE;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    height: 80dvh;
+    width: 80dvw;
+}

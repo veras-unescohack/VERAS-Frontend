@@ -103,7 +103,7 @@
 
 /* Deployment */
 .about-deployment ul li {
-    height: 25px;
+    height: auto;
     font-size: 16px;
 }
 

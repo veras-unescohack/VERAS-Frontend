@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import StatusBadge from './StatusBadge';
+import '../styles/navigation.css';
 
 export default function Navigation({ apiUrl }) {
   return (
@@ -13,10 +14,12 @@ export default function Navigation({ apiUrl }) {
 
         <nav className="nav-links">
           <NavLink to="/breakdown" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-            Media Breakdown
+            <span className="nav-text">Media Breakdown</span>
+            <span className="nav-icon material-symbols-outlined">manufacturing</span>
           </NavLink>
           <NavLink to="/foro" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-            Foro
+            <span className="nav-text">Foro</span>
+            <span className="nav-icon material-symbols-outlined">forum</span>
           </NavLink>
         </nav>
       </div>

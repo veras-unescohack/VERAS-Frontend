@@ -3,7 +3,7 @@ import Navbar from './components/Navigation';
 import About from './pages/About';
 import MediaBreakdown from './pages/MediaBreakdown';
 import CommunityForum from './pages/CommunityForum';
-import './styles/app.css';
+import './styles/index.css'
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
