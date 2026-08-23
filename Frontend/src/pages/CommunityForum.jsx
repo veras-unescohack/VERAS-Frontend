@@ -288,6 +288,19 @@ export default function CommunityForum() {
                   Respuestas ({postDetail.comments ? postDetail.comments.length : 0})
                 </h3>
 
+                <div className="comments-list">
+                  {postDetail.comments && postDetail.comments.length > 0 ? (
+                    postDetail.comments.map((comment) => (
+                      <div key={comment.id} className="comment-card">
+                        <div className="comment-author">@{comment.author}</div>
+                        <p className="comment-text">{comment.text}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Aún no hay comentarios. Sé el primero en responder.</p>
+                  )}
+                </div>
+
                 <form onSubmit={handleAddComment} className="comment-form">
                   <textarea
                     rows="3"
@@ -305,18 +318,6 @@ export default function CommunityForum() {
                   </div>
                 </form>
 
-                <div className="comments-list">
-                  {postDetail.comments && postDetail.comments.length > 0 ? (
-                    postDetail.comments.map((comment) => (
-                      <div key={comment.id} className="comment-card">
-                        <div className="comment-author">@{comment.author}</div>
-                        <p className="comment-text">{comment.text}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Aún no hay comentarios. Sé el primero en responder.</p>
-                  )}
-                </div>
               </div>
             </>
           )}
