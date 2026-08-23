@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from pydantic import BaseModel, Field
 from service.database import get_database
 from service.gemini import enrich_forum_post
 from routers.auth import get_current_user
+from service.ratelimit import check_rate_limit
 
 router = APIRouter(prefix="/forum", tags=["Forum"])
 
@@ -77,7 +78,13 @@ async def list_posts(
     }
 
 @router.post("/posts", status_code=status.HTTP_201_CREATED)
-async def create_post(payload: CreatePostDto, current_user: str = Depends(get_current_user)):
+async def create_post(
+    request: Request,
+    payload: CreatePostDto,
+    current_user: str = Depends(get_current_user)
+):
+    check_rate_limit(request, action_name="forum_post", max_requests=3, window_seconds=300)
+
     db = get_database()
 
     # Llamada al servicio desacoplado de Gemini
@@ -126,7 +133,14 @@ async def upvote_post(post_id: str):
     return {"upvotes": result.get("upvotes", 0)}
 
 @router.post("/posts/{post_id}/comments", status_code=status.HTTP_201_CREATED)
-async def add_comment(post_id: str, payload: CreateCommentDto, current_user: str = Depends(get_current_user)):
+async def add_comment(
+    request: Request,
+    post_id: str,
+    payload: CreateCommentDto,
+    current_user: str = Depends(get_current_user)
+):
+    check_rate_limit(request, action_name="forum_comment", max_requests=3, window_seconds=300)
+
     db = get_database()
     if not ObjectId.is_valid(post_id):
         raise HTTPException(status_code=400, detail="ID no válido")

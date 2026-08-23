@@ -59,7 +59,8 @@ export default function MediaBreakdown() {
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: No se pudo procesar la solicitud.`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Error ${response.status}: No se pudo procesar la solicitud.`);
       }
 
       const data = await response.json();

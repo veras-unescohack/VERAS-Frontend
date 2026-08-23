@@ -8,6 +8,7 @@ const API_URL = rawUrl.replace(/\/+$/, '');
 
 export default function CommunityForum() {
   const { token, isAuthenticated } = useAuth();
+  const [errorMsg, setErrorMsg] = useState('');
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -163,14 +164,21 @@ export default function CommunityForum() {
         setNewCommentText('');
       } else if (res.status === 401) {
         setShowAuthModal(true);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Error ${res.status}: No se pudo procesar.`);
       }
+
     } catch (err) {
-      console.error('Error al agregar comentario:', err);
+      // console.error('Error al agregar comentario:', err);
+      setErrorMsg(`Error al agregar comentario: ${err}`);
     }
   };
 
   return (
     <div className="forum-container">
+      {errorMsg && <div className="error-banner">{errorMsg}</div>}
+
       {/* VISTA 1: LISTADO DE THREADS */}
       {!selectedPostId ? (
         <>

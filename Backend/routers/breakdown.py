@@ -1,10 +1,11 @@
 import uuid
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status, Request
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
 from service.gemini import analyze_media_content, CriticalPoint, VerificationAction
+from service.ratelimit import check_rate_limit
 
 router = APIRouter(
     prefix='/breakdown',
@@ -25,9 +26,12 @@ class BreakdownResponse(BaseModel):
 
 @router.post("/", response_model=BreakdownResponse)
 async def process_breakdown(
+    request: Request,
     prompt: str = Form(..., max_length=5000),
     file: Optional[UploadFile] = File(None)
 ):
+    check_rate_limit(request, action_name="breakdown", max_requests=3, window_seconds=300)
+
     req_id = str(uuid.uuid4())
     file_bytes = None
     mime_type = None
