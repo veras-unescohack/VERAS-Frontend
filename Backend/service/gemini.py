@@ -82,23 +82,16 @@ Genera un título neutral conciso, un resumen objetivo sin sesgos, sin emitir ju
 
 def enrich_forum_post(content: str) -> PostEnrichmentSchema:
     """Genera automáticamente título, resumen y tags a partir del contenido de un post."""
-    try:
-        config = types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=PostEnrichmentSchema,
-            system_instruction=FORUM_SYSTEM_INSTRUCTION,
-            temperature=0.2
-        )
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=[content],
-            config=config
-        )
-        return PostEnrichmentSchema.model_validate_json(response.text)
-    except Exception:
-        # Fallback de respaldo en caso de desconexión momentánea
-        return PostEnrichmentSchema(
-            title=content[:50] + ("..." if len(content) > 50 else ""),
-            summary=content[:150] + ("..." if len(content) > 150 else ""),
-            tags=["comunidad", "debate", "general"]
-        )
+
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_schema=PostEnrichmentSchema,
+        system_instruction=FORUM_SYSTEM_INSTRUCTION,
+        temperature=0.2
+    )
+    response = client.models.generate_content(
+        model="gemini-3.6-flash",
+        contents=[content],
+        config=config
+    )
+    return PostEnrichmentSchema.model_validate_json(response.text)
