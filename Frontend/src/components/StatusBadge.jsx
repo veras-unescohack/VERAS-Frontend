@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../styles/statusbadge.css';
 
 export default function StatusBadge({ apiUrl }) {
   const [status, setStatus] = useState('checking'); // checking | waking | ready | error
@@ -39,10 +40,10 @@ export default function StatusBadge({ apiUrl }) {
   }[status];
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: config.color }}>
-      <span style={{ fontSize: '10px', color: 'gray', width: '40px', textAlign: 'right', padding: '0 5px', borderRight: '1px gray solid'}}>Backend status</span>
-      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{config.icon}</span>
-      <span>{config.text}</span>
+    <div className="statusbadge" style={{ color: config.color }}>
+      <span className='statusbadge-title'>Backend status</span>
+      <span className="material-symbols-outlined statusbadge-icon">{config.icon}</span>
+      <span className='statusbadge-text'>{config.text}</span>
     </div>
   );
 }

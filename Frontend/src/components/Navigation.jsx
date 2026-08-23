@@ -19,13 +19,21 @@ export default function Navigation({ apiUrl }) {
           </Link>
 
           <nav className="nav-links">
+            <NavLink to="/home" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <span className="nav-text">Home</span>
+              <span className="nav-icon material-symbols-outlined">home</span>
+            </NavLink>
             <NavLink to="/breakdown" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <span className="nav-text">Media Breakdown</span>
               <span className="nav-icon material-symbols-outlined">manufacturing</span>
             </NavLink>
             <NavLink to="/foro" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-              <span className="nav-text">Foro</span>
+              <span className="nav-text">Community Forum</span>
               <span className="nav-icon material-symbols-outlined">forum</span>
+            </NavLink>
+            <NavLink to="/guide" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <span className="nav-text">Guide</span>
+              <span className="nav-icon material-symbols-outlined">route</span>
             </NavLink>
           </nav>
         </div>
@@ -33,15 +41,17 @@ export default function Navigation({ apiUrl }) {
         <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <StatusBadge apiUrl={apiUrl} />
           {isAuthenticated ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
-                <span style={{ fontWeight: 600, color: '#0f172a' }}>@{user}</span>
-                <button onClick={logout} className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.78rem' }}>
-                  Salir
+              <div className="auth-section">
+                <span className="auth-user">@{user}</span>
+                <button onClick={logout} className="btn-secondary">
+                  <span className='auth-btn-text'>Logout</span>
+                  <span className='auth-btn-icon material-symbols-outlined'>logout</span>
                 </button>
               </div>
             ) : (
-              <button onClick={() => setShowAuthModal(true)} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
-                Entrar
+              <button onClick={() => setShowAuthModal(true)} className="btn-primary">
+                <span className='auth-btn-text'>Login</span>
+                <span className='auth-btn-icon material-symbols-outlined'>login</span>
               </button>
             )}
         </div>

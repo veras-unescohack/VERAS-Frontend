@@ -12,7 +12,7 @@
 
 .header-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 24px;
 }
 
@@ -58,8 +58,28 @@
   display: none;
 }
 
+/* Auth styles */
+.auth-section {
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.auth-user {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.auth-btn-text {
+  display: block;
+}
+.auth-btn-icon {
+  display: none;
+}
+
 /* Mobile accesibility */
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 800px) {
   .nav-links {
     background-color: white;
     width: 100%;
@@ -84,8 +104,20 @@
     line-height: 45px;
     text-align: center;
   }
-
+  
   .nav-text {
     display: none;
   }
+
+  .auth-user {
+    font-size: 12px;
+  }
+  .auth-btn-text {
+    display: none;
+  }
+  .auth-btn-icon {
+    display: block;
+    font-size: 14px;
+  }
+
 }
