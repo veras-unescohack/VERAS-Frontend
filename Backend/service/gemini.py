@@ -73,11 +73,11 @@ def analyze_media_content(prompt: str, file_bytes: Optional[bytes] = None, mime_
 class PostEnrichmentSchema(BaseModel):
     title: str = Field(description="Título corto, descriptivo y neutral generado a partir del mensaje del usuario.")
     summary: str = Field(description="Descripción u observación objetiva de 1 o 2 oraciones sobre el contenido.")
-    tags: List[str] = Field(description="Lista de 3 a 5 tags en minúsculas relevantes para clasificar el tema.")
+    tags: List[str] = Field(description="Lista de 3 a 5 tags en minúsculas sobre el mensaje del usuario, los tags deben ser tópicos relacionados a desinformacion mediática.")
 
 FORUM_SYSTEM_INSTRUCTION = """
-Analiza el mensaje del usuario para un foro de discusión y alfabetización mediática.
-Genera un título conciso y neutral, un resumen objetivo sin sesgos y una lista de 3 a 5 tags en minúsculas y sin caracteres especiales (sin almohadillas #).
+Analiza el mensaje del usuario para un foro de alfabetización mediática.
+Genera un título neutral conciso, un resumen objetivo sin sesgos, sin emitir juicios y 3-5 tags clave (en minúsculas, sin almohadillas # y sin caracteres especiales).
 """
 
 def enrich_forum_post(content: str) -> PostEnrichmentSchema:
