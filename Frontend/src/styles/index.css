@@ -8,6 +8,6 @@
 }
 
 .app-container {
-    height: 80dvh;
     width: 80dvw;
+    padding-bottom: 75px;
 }
