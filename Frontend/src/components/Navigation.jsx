@@ -27,12 +27,12 @@ export default function Navigation({ apiUrl }) {
               <span className="nav-text">Media Breakdown</span>
               <span className="nav-icon material-symbols-outlined">manufacturing</span>
             </NavLink>
-            <NavLink to="/foro" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/forum" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <span className="nav-text">Community Forum</span>
               <span className="nav-icon material-symbols-outlined">forum</span>
             </NavLink>
-            <NavLink to="/guide" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-              <span className="nav-text">Guide</span>
+            <NavLink to="/governance" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <span className="nav-text">Governance</span>
               <span className="nav-icon material-symbols-outlined">route</span>
             </NavLink>
           </nav>

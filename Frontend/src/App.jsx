@@ -5,6 +5,7 @@ import About from './pages/About';
 import MediaBreakdown from './pages/MediaBreakdown';
 import CommunityForum from './pages/CommunityForum';
 import './styles/index.css'
+import GovernanceGuide from './pages/GovernanceGuide';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -18,7 +19,8 @@ export default function App() {
             <Routes>
               <Route path="/" element={<About />} />
               <Route path="/breakdown" element={<MediaBreakdown />} />
-              <Route path="/foro" element={<CommunityForum />} />
+              <Route path="/forum" element={<CommunityForum />} />
+              <Route path="/governance" element={<GovernanceGuide />} />
               {/* Redirección por defecto si la ruta no existe */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
