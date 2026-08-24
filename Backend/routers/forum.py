@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from pydantic import BaseModel, Field
 from service.database import get_database
 from service.gemini import enrich_forum_post
+from service.gemini import moderate_comment
 from routers.auth import get_current_user
 from service.ratelimit import check_rate_limit
 
@@ -145,10 +146,18 @@ async def add_comment(
     if not ObjectId.is_valid(post_id):
         raise HTTPException(status_code=400, detail="ID no válido")
     
+    # 2. Moderación con Gemini
+    moderation = moderate_comment(payload.text)
+    if not moderation.is_allowed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=moderation.rejection_reason or "Tu comentario infringe las normas de la comunidad sobre discurso de odio o acoso."
+        )
+
     comment_data = {
         "_id": ObjectId(),
         "author": current_user,
-        "text": payload.text,
+        "text": moderation.cleaned_text,
         "created_at": datetime.utcnow()
     }
     result = await db.posts.update_one(

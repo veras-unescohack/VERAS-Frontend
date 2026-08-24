@@ -69,6 +69,73 @@ def analyze_media_content(prompt: str, file_bytes: Optional[bytes] = None, mime_
 
     return MediaAnalysisSchema.model_validate_json(response.text)
 
+# Esquema para moderación de comentarios
+class CommentModerationSchema(BaseModel):
+    reasoning: str = Field(
+        description="Paso a paso del análisis: enumera las palabras explícitas, insultos o patrones detectados y explica por qué se permite o bloquea."
+    )
+    is_allowed: bool = Field(
+        description="Falso si contiene discurso de odio, discriminación, incitación a la violencia o acoso grave."
+    )
+    rejection_reason: Optional[str] = Field(
+        default=None, 
+        description="Motivo pedagógico breve en caso de ser bloqueado."
+    )
+    cleaned_text: str = Field(
+        description="El texto original con malas palabras o groserías leves reemplazadas por asteriscos (ej. p***). Si no hay groserías, se mantiene intacto."
+    )
+
+COMMENT_MODERATION_INSTRUCTION = """
+Eres un moderador de contenido neutral y preciso para un foro cívico de verificación mediática.
+Analiza el comentario del usuario bajo las siguientes reglas estrictas:
+
+1. RECHAZO TOTAL (is_allowed: false):
+   - Bloquea cualquier discurso de odio dirigido a grupos o individuos (raza, etnia, religión, género, orientación sexual, nacionalidad).
+   - Bloquea amenazas, incitación a la violencia, doxing o ataques personales graves.
+   - Proporciona un `rejection_reason` conciso y respetuoso.
+
+2. CENSURA LEVE (is_allowed: true con cleaned_text):
+   - Si el comentario expresa un argumento válido pero contiene malas palabras, obscenidades o insultos menores, censura esas palabras específicas con asteriscos (ej. m*****).
+   - Si el texto está completamente limpio, `cleaned_text` debe ser idéntico al texto original.
+
+3. Pasos obligatorios:
+   - En 'reasoning', detalla textualmente tu veredicto.
+   - Si detectas insultos hacia otro usuario o discurso de odio, marca 'is_allowed: false'.
+   - Si el mensaje es constructivo pero contiene palabras altisonantes menores, censúralas obligatoriamente en 'cleaned_text' (ej. 'm*****, 'c*****') y marca 'is_allowed: true'.
+"""
+
+def moderate_comment(text: str) -> CommentModerationSchema:
+    """Modera y sanitiza el comentario de un usuario con Gemini 2.5 Flash."""
+    try:
+        config = types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=CommentModerationSchema,
+            system_instruction=COMMENT_MODERATION_INSTRUCTION,
+            temperature=0.1
+        )
+        response = client.models.generate_content(
+            model="gemini-3.6-flash",
+            contents=[text],
+            config=config
+        )
+        result = CommentModerationSchema.model_validate_json(response.text)
+        print(f"\n--- [MODERACIÓN GEMINI] ---")
+        print(f"Texto original: {text}")
+        print(f"Razonamiento: {result.reasoning}")
+        print(f"Permitido: {result.is_allowed}")
+        print(f"Texto limpio: {result.cleaned_text}")
+        print(f"---------------------------\n")
+
+        return result
+    except Exception as e:
+        print(f"[ERROR MODERACIÓN]: {str(e)}")
+        return CommentModerationSchema(
+            reasoning="Fallo en la API, se aplicó fallback seguro.",
+            is_allowed=False,
+            cleaned_text=text,
+            rejection_reason="Fallo en la API, se aplicó fallback seguro."
+        )
+
 # Esquema para estructurar el post con Gemini
 class PostEnrichmentSchema(BaseModel):
     title: str = Field(description="Título corto, descriptivo y neutral generado a partir del mensaje del usuario.")
@@ -77,7 +144,7 @@ class PostEnrichmentSchema(BaseModel):
 
 FORUM_SYSTEM_INSTRUCTION = """
 Analiza el mensaje del usuario para un foro de alfabetización mediática.
-Genera un título neutral conciso, un resumen objetivo sin sesgos, sin emitir juicios y 3-5 tags clave (en minúsculas, sin almohadillas # y sin caracteres especiales).
+Genera un título neutral conciso, un resumen objetivo sin sesgos, sin emitir juicios y 3-5 tags clave (en minúsculas y sin caracteres especiales).
 """
 
 def enrich_forum_post(content: str) -> PostEnrichmentSchema:
