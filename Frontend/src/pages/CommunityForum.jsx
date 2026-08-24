@@ -15,6 +15,7 @@ export default function CommunityForum() {
   const [creating, setCreating] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [postDetail, setPostDetail] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Filtros y paginación
   const [search, setSearch] = useState('');
@@ -49,10 +50,16 @@ export default function CommunityForum() {
   const fetchPostDetail = async (id) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/forum/posts/${id}`);
+      const headers = {};
+      if (isAuthenticated && token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_URL}/forum/posts/${id}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setPostDetail(data);
+        setIsBookmarked(data.is_bookmarked || false);
         setSelectedPostId(id);
       }
     } catch (err) {
@@ -135,6 +142,32 @@ export default function CommunityForum() {
     }
   };
 
+  const handleToggleBookmark = async () => {
+    if (!selectedPostId) return;
+
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/forum/posts/${selectedPostId}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsBookmarked(data.saved);
+      } else if (res.status === 401) {
+        setShowAuthModal(true);
+      }
+    } catch (err) {
+      console.error('Error al guardar el post:', err);
+    }
+  };
+
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newCommentText.trim()) return;
@@ -168,10 +201,8 @@ export default function CommunityForum() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.detail || `Error ${res.status}: No se pudo procesar.`);
       }
-
     } catch (err) {
-      // console.error('Error al agregar comentario:', err);
-      setErrorMsg(`Error al agregar comentario: ${err}`);
+      setErrorMsg(`Error al agregar comentario: ${err.message || err}`);
     }
   };
 
@@ -253,7 +284,7 @@ export default function CommunityForum() {
           </div>
         </>
       ) : (
-        /* VISTA 2: DETALLE, UPVOTES Y COMENTARIOS */
+        /* VISTA 2: DETALLE, UPVOTES, BOOKMARKS Y COMENTARIOS */
         <div className="thread-detail-container">
           <button
             onClick={() => { setSelectedPostId(null); setPostDetail(null); }}
@@ -272,10 +303,31 @@ export default function CommunityForum() {
                     <span className="thread-meta">Iniciado por <b>@{postDetail.author}</b></span>
                     <h2 style={{ margin: '6px 0 10px 0', color: '#0f172a' }}>{postDetail.title}</h2>
                   </div>
-                  <button onClick={handleUpvote} className="upvote-btn" title="Apoyar hilo">
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>thumb_up</span>
-                    <span>{postDetail.upvotes}</span>
-                  </button>
+                  
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button 
+                      onClick={handleToggleBookmark} 
+                      className="btn-secondary"
+                      style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        padding: '6px 10px', 
+                        borderRadius: '20px', 
+                        color: isBookmarked ? '#2563eb' : '#475569',
+                        borderColor: isBookmarked ? '#2563eb' : '#cbd5e1'
+                      }} 
+                      title={isBookmarked ? "Quitar de guardados" : "Guardar post"}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                        {isBookmarked ? 'bookmark' : 'bookmark_border'}
+                      </span>
+                    </button>
+
+                    <button onClick={handleUpvote} className="upvote-btn" title="Apoyar hilo">
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>thumb_up</span>
+                      <span>{postDetail.upvotes}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="detail-summary-box">
@@ -325,7 +377,6 @@ export default function CommunityForum() {
                     </button>
                   </div>
                 </form>
-
               </div>
             </>
           )}
@@ -362,7 +413,7 @@ export default function CommunityForum() {
         </div>
       )}
 
-      {/* MODAL DE LOGIN CUANDO SE INTENTA INTERACTUAR SIN SESIÓN */}
+      {/* MODAL DE LOGIN */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

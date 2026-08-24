@@ -173,3 +173,26 @@ async def add_comment(
         "text": comment_data["text"],
         "created_at": comment_data["created_at"].isoformat()
     }
+
+@router.post("/posts/{post_id}/bookmark")
+async def toggle_bookmark(post_id: str, current_user: str = Depends(get_current_user)):
+    db = get_database()
+    user = await db.users.find_one({"username": current_user})
+    saved = user.get("saved_posts", [])
+    
+    if post_id in saved:
+        await db.users.update_one({"username": current_user}, {"$pull": {"saved_posts": post_id}})
+        return {"saved": False}
+    else:
+        await db.users.update_one({"username": current_user}, {"$addToSet": {"saved_posts": post_id}})
+        return {"saved": True}
+
+@router.get("/saved-posts")
+async def get_saved_posts(current_user: str = Depends(get_current_user)):
+    db = get_database()
+    user = await db.users.find_one({"username": current_user})
+    saved_ids = user.get("saved_posts", [])
+    
+    obj_ids = [ObjectId(pid) for pid in saved_ids if ObjectId.is_valid(pid)]
+    posts = await db.posts.find({"_id": {"$in": obj_ids}}).to_list(length=50)
+    return [post_serializer(p) for p in posts]
