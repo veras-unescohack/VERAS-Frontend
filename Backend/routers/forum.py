@@ -84,28 +84,36 @@ async def create_post(
     payload: CreatePostDto,
     current_user: str = Depends(get_current_user)
 ):
-    check_rate_limit(request, action_name="forum_post", max_requests=3, window_seconds=300)
+    try:
+        check_rate_limit(request, action_name="forum_post", max_requests=3, window_seconds=300)
 
-    db = get_database()
+        enriched = enrich_forum_post(payload.content)
+        cleaned_tags = [t.strip().lower().replace("#", "") for t in enriched.tags if t.strip()]
 
-    # Llamada al servicio desacoplado de Gemini
-    enriched = enrich_forum_post(payload.content)
-    cleaned_tags = [t.strip().lower().replace("#", "") for t in enriched.tags if t.strip()]
+        db = get_database()
+        doc = {
+            "author": current_user,
+            "content": payload.content,
+            "title": enriched.title,
+            "summary": enriched.summary,
+            "tags": cleaned_tags,
+            "upvotes": 0,
+            "comments": [],
+            "created_at": datetime.utcnow()
+        }
+        result = await db.posts.insert_one(doc)
+        doc["_id"] = result.inserted_id
 
-    doc = {
-        "author": current_user,
-        "content": payload.content,
-        "title": enriched.title,
-        "summary": enriched.summary,
-        "tags": cleaned_tags,
-        "upvotes": 0,
-        "comments": [],
-        "created_at": datetime.utcnow()
-    }
+        return post_detail_serializer(doc)
 
-    result = await db.posts.insert_one(doc)
-    doc["_id"] = result.inserted_id
-    return post_detail_serializer(doc)
+    except HTTPException:
+        raise # pasar error
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error: {str(e)}"
+        )
 
 @router.get("/posts/{post_id}")
 async def get_post(post_id: str):
@@ -140,39 +148,48 @@ async def add_comment(
     payload: CreateCommentDto,
     current_user: str = Depends(get_current_user)
 ):
-    check_rate_limit(request, action_name="forum_comment", max_requests=3, window_seconds=300)
+    try:
+        check_rate_limit(request, action_name="forum_comment", max_requests=3, window_seconds=300)
 
-    db = get_database()
-    if not ObjectId.is_valid(post_id):
-        raise HTTPException(status_code=400, detail="ID no válido")
-    
-    # 2. Moderación con Gemini
-    moderation = moderate_comment(payload.text)
-    if not moderation.is_allowed:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=moderation.rejection_reason or "Tu comentario infringe las normas de la comunidad sobre discurso de odio o acoso."
+        if not ObjectId.is_valid(post_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid post ID")
+        
+        moderation = moderate_comment(payload.text)
+        if not moderation.is_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=moderation.rejection_reason or "Your comment breaks the community rules"
+            )
+
+        db = get_database()
+        comment_data = {
+            "_id": ObjectId(),
+            "author": current_user,
+            "text": moderation.cleaned_text,
+            "created_at": datetime.utcnow()
+        }
+        result = await db.posts.update_one(
+            {"_id": ObjectId(post_id)},
+            {"$push": {"comments": comment_data}}
         )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+        
+        return {
+            "id": str(comment_data["_id"]),
+            "author": comment_data["author"],
+            "text": comment_data["text"],
+            "created_at": comment_data["created_at"].isoformat()
+        }
 
-    comment_data = {
-        "_id": ObjectId(),
-        "author": current_user,
-        "text": moderation.cleaned_text,
-        "created_at": datetime.utcnow()
-    }
-    result = await db.posts.update_one(
-        {"_id": ObjectId(post_id)},
-        {"$push": {"comments": comment_data}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Post no encontrado")
-    
-    return {
-        "id": str(comment_data["_id"]),
-        "author": comment_data["author"],
-        "text": comment_data["text"],
-        "created_at": comment_data["created_at"].isoformat()
-    }
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=moderation.rejection_reason or "Tu comentario infringe las normas de la comunidad sobre discurso de odio o acoso."
+        )                
 
 @router.post("/posts/{post_id}/bookmark")
 async def toggle_bookmark(post_id: str, current_user: str = Depends(get_current_user)):

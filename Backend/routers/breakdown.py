@@ -12,7 +12,7 @@ from routers.auth import get_current_user
 
 router = APIRouter(
     prefix='/breakdown',
-    tags=['breakdown']
+    tags=['Breakdown']
 )
 
 MAX_FILE_SIZE_BYTES = 6 * 1024 * 1024  # 6 M
@@ -36,16 +36,25 @@ async def process_breakdown(
     is_public: bool = Form(False),
     file: Optional[UploadFile] = File(None)
 ):
-    check_rate_limit(request, action_name="breakdown", max_requests=3, window_seconds=300)
+    try:
+        check_rate_limit(request, action_name="breakdown", max_requests=3, window_seconds=300)
 
-    file_bytes, mime_type, has_media = None, None, False
-    if file:
-        file_bytes = await file.read()
-        mime_type = file.content_type
-        has_media = True
+        file_bytes, mime_type, has_media = None, None, False
+        if file:
+            file_bytes = await file.read()
+            mime_type = file.content_type
+            has_media = True
 
-    analysis = analyze_media_content(prompt=prompt, file_bytes=file_bytes, mime_type=mime_type)
+        analysis = analyze_media_content(prompt=prompt, file_bytes=file_bytes, mime_type=mime_type)
 
+    except HTTPException:
+        raise # pasar error
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
     # Identificar si hay usuario autenticado opcional
     author = "anonymous"
     auth_header = request.headers.get("Authorization")
