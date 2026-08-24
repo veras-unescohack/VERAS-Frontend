@@ -19,7 +19,7 @@ export default function Navigation({ apiUrl }) {
           </Link>
 
           <nav className="nav-links">
-            <NavLink to="/home" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <span className="nav-text">Home</span>
               <span className="nav-icon material-symbols-outlined">home</span>
             </NavLink>
