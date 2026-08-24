@@ -25,7 +25,7 @@ export default function UserDashboard() {
 
   const fetchGlobalFeed = async () => {
     try {
-      const res = await fetch(`${API_URL}/inspector/global`);
+      const res = await fetch(`${API_URL}/breakdown/global`);
       if (res.ok) {
         const data = await res.json();
         setGlobalFeed(data);
@@ -39,7 +39,7 @@ export default function UserDashboard() {
     setLoading(true);
     try {
       const [bRes, tRes] = await Promise.all([
-        fetch(`${API_URL}/inspector/my-breakdowns`, {
+        fetch(`${API_URL}/breakdown/my-breakdowns`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         fetch(`${API_URL}/forum/saved-posts`, {
