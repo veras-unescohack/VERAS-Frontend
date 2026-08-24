@@ -30,7 +30,7 @@ async def process_breakdown(
     prompt: str = Form(..., max_length=5000),
     file: Optional[UploadFile] = File(None)
 ):
-    check_rate_limit(request, action_name="breakdown", max_requests=1, window_seconds=300) // 1 each 3 min
+    check_rate_limit(request, action_name="breakdown", max_requests=1, window_seconds=300) # 1 each 3 min
 
     req_id = str(uuid.uuid4())
     file_bytes = None
