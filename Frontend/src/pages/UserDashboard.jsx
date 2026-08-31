@@ -125,6 +125,21 @@ export default function UserDashboard() {
           globalFeed.map((item) => (
             <div key={item.id} className="feed-card">
               <div className="feed-header">
+                {item.media_url && (
+                  <img
+                    src={item.media_url}
+                    alt="Evidencia analizada"
+                    style={{
+                      width: '74px',
+                      height: '74px',
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      flexShrink: 0
+                    }}
+                    loading="lazy"
+                  />
+                )}
                 <span>Inspección por @{item.author}</span>
                 <span>{new Date(item.created_at).toLocaleDateString()}</span>
               </div>
@@ -141,12 +156,31 @@ export default function UserDashboard() {
             myBreakdowns.map((item) => (
               <div key={item.id} className="feed-card">
                 <div className="feed-header">
-                  <span>ID: {item.id}</span>
+                  <span>{item.author ? `Inspección por @${item.author}` : `ID: ${item.id}`}</span>
                   <span>{new Date(item.created_at).toLocaleDateString()}</span>
                 </div>
-                <h4 className="feed-prompt">{item.prompt_received}</h4>
-                <p className="feed-summary">{item.neutral_summary}</p>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                {item.media_url && (
+                  <img
+                      src={item.media_url}
+                      alt="Evidencia analizada"
+                      style={{
+                        width: '74px',
+                        height: '74px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        border: '1px solid #e2e8f0',
+                        flexShrink: 0
+                      }}
+                      loading="lazy"
+                    />
+                  )}
+                <div style={{ flex: 1 }}>
+                  <h4 className="feed-prompt">{item.prompt_received}</h4>
+                  <p className="feed-summary">{item.neutral_summary}</p>
+                </div>
               </div>
+            </div>
             ))
           )
         )}

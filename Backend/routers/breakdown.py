@@ -5,6 +5,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status, Re
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+from service.storage_service import upload_media_to_supabase
 from service.database import get_database
 from service.gemini import analyze_media_content, CriticalPoint, VerificationAction
 from service.ratelimit import check_rate_limit
@@ -45,6 +46,13 @@ async def process_breakdown(
             mime_type = file.content_type
             has_media = True
 
+            # upload a S3 asincrono
+            media_url = upload_media_to_supabase(
+                file_bytes=file_bytes,
+                filename=file.filename or "media.jpg",
+                mime_type=mime_type
+            )
+
         analysis = analyze_media_content(prompt=prompt, file_bytes=file_bytes, mime_type=mime_type)
 
     except HTTPException:
@@ -55,6 +63,7 @@ async def process_breakdown(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
     # Identificar si hay usuario autenticado opcional
     author = "anonymous"
     auth_header = request.headers.get("Authorization")
@@ -75,6 +84,7 @@ async def process_breakdown(
         "educational_insights": analysis.educational_insights,
         "recommended_actions": [a.model_dump() for a in analysis.recommended_actions],
         "has_media": has_media,
+        "media_url": media_url,
         "author": author,
         "is_public": True,
         "created_at": datetime.utcnow()
@@ -102,6 +112,7 @@ async def get_global_breakdowns():
             "id": str(b["_id"]),
             "prompt_received": b["prompt_received"],
             "neutral_summary": b["neutral_summary"],
+            "media_url": b.get("media_url"),
             "educational_insights": b.get("educational_insights", ""),
             "author": b.get("author", "anónimo"),
             "created_at": b.get("created_at", datetime.utcnow()).isoformat()
@@ -119,6 +130,7 @@ async def get_my_breakdowns(current_user: str = Depends(get_current_user)):
             "id": str(b["_id"]),
             "prompt_received": b["prompt_received"],
             "neutral_summary": b["neutral_summary"],
+            "media_url": b.get("media_url"),
             "created_at": b.get("created_at", datetime.utcnow()).isoformat()
         }
         for b in items
