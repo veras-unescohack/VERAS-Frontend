@@ -8,6 +8,12 @@ from google.genai import types
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+from service.gemini_tools import (
+    extract_safe_url_metadata, 
+    search_relevant_forum_threads, 
+    civic_entity_router
+)
+
 dotenv_path = Path(__file__).resolve().parent.parent.parent / '.env'
 load_dotenv(dotenv_path=dotenv_path)
 
@@ -15,7 +21,7 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Esquema estructurado para alfabetización mediática
 class CriticalPoint(BaseModel):
-    indicator: str = Field(description="Elemento o técnica observada (ej. 'Lenguaje emocional', 'Falta de fuentes primarias', 'Inconsistencia en metadatos/iluminación').")
+    indicator: str = Field(description="Elemento o técnica observada (ej. 'Lenguaje emocional', 'Falta de fuentes primarias').")
     observation: str = Field(description="Explicación neutral de por qué este punto requiere atención o verificación adicional.")
 
 class VerificationAction(BaseModel):
@@ -29,7 +35,7 @@ class MediaAnalysisSchema(BaseModel):
     recommended_actions: List[VerificationAction] = Field(description="Acciones para corroborar información, proteger la integridad digital o profundizar.")
 
 BREAKDOWN_SYSTEM_INSTRUCTION = """
-Eres un especialista neutro en alfabetización mediática, análisis crítico de contenido y verificación de datos.
+Eres VERAS un especialista neutro en alfabetización mediática, análisis crítico de contenido y verificación de datos.
 Tu función es educar y equipar al usuario con herramientas de pensamiento crítico para inspeccionar contenidos informativos y multimedia, previniendo la desinformación.
 
 Reglas estrictas:
@@ -38,6 +44,12 @@ Reglas estrictas:
 3. NO emitas un veredicto definitivo de 'verdad' o 'mentira' ni sentencies si fue generado por IA salvo que existan anomalías técnicas evidentes. En lugar de juzgar, enseña qué indicios observar.
 4. Desglosa elementos a comprobar: sesgos de urgencia, citas sin atribución, posibles artefactos visuales, contexto ausente o apelaciones emocionales.
 5. Proporciona recomendaciones accionables de verificación y medidas de autocuidado digital.
+6. Siempre responde con el JSON Schema
+
+Definicion de funciones:
+1. Si el usuario provee un link web llama a 'extract_safe_url_metadata' para verificar la fuente.
+2. Si el case involucra crimenes cibernéticos, estafas, o emergencias de salud mental llama a 'civic_entity_router'.
+3. Llama a 'search_relevant_forum_threads' para encontrar discusiones existentes de apoyo.
 """
 
 def analyze_media_content(prompt: str, file_bytes: Optional[bytes] = None, mime_type: Optional[str] = None) -> MediaAnalysisSchema:
@@ -45,6 +57,12 @@ def analyze_media_content(prompt: str, file_bytes: Optional[bytes] = None, mime_
     Envía el prompt y el archivo multimedia opcional a Gemini
     y devuelve la estructura validada según MediaAnalysisSchema.
     """
+    tools = [
+        extract_safe_url_metadata,
+        search_relevant_forum_threads,
+        civic_entity_router
+    ]
+
     contents = [prompt]
 
     if file_bytes and mime_type:
@@ -57,10 +75,11 @@ def analyze_media_content(prompt: str, file_bytes: Optional[bytes] = None, mime_
 
     try:
         config = types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=MediaAnalysisSchema,
             system_instruction=BREAKDOWN_SYSTEM_INSTRUCTION,
-            temperature=0.2
+            tools=tools,
+            temperature=0.2,
+            response_mime_type="application/json",
+            response_schema=MediaAnalysisSchema
         )
 
         response = client.models.generate_content(
