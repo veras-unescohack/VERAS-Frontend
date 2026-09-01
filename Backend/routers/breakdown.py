@@ -35,7 +35,8 @@ async def process_breakdown(
     request: Request,
     prompt: str = Form(..., max_length=5000),
     is_public: bool = Form(False),
-    file: Optional[UploadFile] = File(None)
+    file: Optional[UploadFile] = File(None),
+    current_user: str = Depends(get_current_user)
 ):
     try:
         check_rate_limit(request, action_name="breakdown", max_requests=3, window_seconds=300)
@@ -64,18 +65,6 @@ async def process_breakdown(
             detail=str(e)
         )
 
-    # Identificar si hay usuario autenticado opcional
-    author = "anonymous"
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        try:
-            import jwt, os
-            token = auth_header.split(" ")[1]
-            payload = jwt.decode(token, os.getenv("JWT_SECRET", "hackathon_secret_key_change_in_prod"), algorithms=["HS256"])
-            author = payload.get("sub", "anonymous")
-        except Exception:
-            pass
-
     db = get_database()
     doc = {
         "prompt_received": prompt,
@@ -85,7 +74,7 @@ async def process_breakdown(
         "recommended_actions": [a.model_dump() for a in analysis.recommended_actions],
         "has_media": has_media,
         "media_url": media_url,
-        "author": author,
+        "author": current_user,
         "is_public": True,
         "created_at": datetime.utcnow()
     }
