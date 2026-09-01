@@ -17,12 +17,12 @@ export default function CommunityForum() {
   const [postDetail, setPostDetail] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // Filtros y paginación
+  // Filters and pagination
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
 
-  // Estados de formularios y modal de autenticación
+  // Form states and auth modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [newContent, setNewContent] = useState('');
@@ -41,7 +41,7 @@ export default function CommunityForum() {
         setHasNext(data.has_next);
       }
     } catch (err) {
-      console.error('Error al cargar posts:', err);
+      console.error('Error loading posts:', err);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export default function CommunityForum() {
         setSelectedPostId(id);
       }
     } catch (err) {
-      console.error('Error al obtener detalle del post:', err);
+      console.error('Error fetching post details:', err);
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ export default function CommunityForum() {
         setShowAuthModal(true);
       }
     } catch (err) {
-      console.error('Error al crear post:', err);
+      console.error('Error creating post:', err);
     } finally {
       setCreating(false);
     }
@@ -138,7 +138,7 @@ export default function CommunityForum() {
         setPostDetail((prev) => ({ ...prev, upvotes: data.upvotes }));
       }
     } catch (err) {
-      console.error('Error al votar:', err);
+      console.error('Error voting:', err);
     }
   };
 
@@ -164,7 +164,7 @@ export default function CommunityForum() {
         setShowAuthModal(true);
       }
     } catch (err) {
-      console.error('Error al guardar el post:', err);
+      console.error('Error bookmarking post:', err);
     }
   };
 
@@ -199,10 +199,10 @@ export default function CommunityForum() {
         setShowAuthModal(true);
       } else {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Error ${res.status}: No se pudo procesar.`);
+        throw new Error(errorData.detail || `Error ${res.status}: Failed to process comment.`);
       }
     } catch (err) {
-      setErrorMsg(`Error al agregar comentario: ${err.message || err}`);
+      setErrorMsg(`Error adding comment: ${err.message || err}`);
     }
   };
 
@@ -210,14 +210,14 @@ export default function CommunityForum() {
     <div className="forum-container">
       {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
-      {/* VISTA 1: LISTADO DE THREADS */}
+      {/* VIEW 1: THREAD LIST */}
       {!selectedPostId ? (
         <>
           <form onSubmit={handleSearchSubmit} className="forum-search-box">
             <span className="material-symbols-outlined" style={{ color: '#64748b' }}>search</span>
             <input
               type="text"
-              placeholder="Buscar por tags o palabras clave..."
+              placeholder="Search by tags or keywords..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="search-input"
@@ -227,21 +227,21 @@ export default function CommunityForum() {
           <div className="forum-controls">
             <button onClick={handleOpenCreateModal} className="btn-primary">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-              Crear Thread
+              Create Thread
             </button>
           </div>
 
           {loading ? (
-            <p style={{ textAlign: 'center', color: '#64748b', margin: '40px 0' }}>Cargando discusiones...</p>
+            <p style={{ textAlign: 'center', color: '#64748b', margin: '40px 0' }}>Loading discussions...</p>
           ) : (
             <div className="threads-list">
               {posts.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#94a3b8', margin: '40px 0' }}>No se encontraron posts.</p>
+                <p style={{ textAlign: 'center', color: '#94a3b8', margin: '40px 0' }}>No posts found.</p>
               ) : (
                 posts.map((post) => (
                   <div key={post.id} className="thread-card">
                     <div className="thread-header">
-                      <span className="thread-meta">Iniciado por <b>@{post.author}</b></span>
+                      <span className="thread-meta">Started by <b>@{post.author}</b></span>
                     </div>
 
                     <h3 className="thread-title">{post.title}</h3>
@@ -256,7 +256,7 @@ export default function CommunityForum() {
 
                       <button onClick={() => fetchPostDetail(post.id)} className="btn-secondary">
                         <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat</span>
-                        {post.comments_count} {post.comments_count === 1 ? 'comentario' : 'comentarios'}
+                        {post.comments_count} {post.comments_count === 1 ? 'comment' : 'comments'}
                       </button>
                     </div>
                   </div>
@@ -271,20 +271,20 @@ export default function CommunityForum() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               className="btn-secondary"
             >
-              Anterior
+              Previous
             </button>
-            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Página {page}</span>
+            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Page {page}</span>
             <button
               disabled={!hasNext}
               onClick={() => setPage((p) => p + 1)}
               className="btn-secondary"
             >
-              Siguiente
+              Next
             </button>
           </div>
         </>
       ) : (
-        /* VISTA 2: DETALLE, UPVOTES, BOOKMARKS Y COMENTARIOS */
+        /* VIEW 2: DETAIL, UPVOTES, BOOKMARKS, AND COMMENTS */
         <div className="thread-detail-container">
           <button
             onClick={() => { setSelectedPostId(null); setPostDetail(null); }}
@@ -292,7 +292,7 @@ export default function CommunityForum() {
             style={{ width: 'fit-content' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
-            Volver al foro
+            Back to forum
           </button>
 
           {postDetail && (
@@ -300,7 +300,7 @@ export default function CommunityForum() {
               <div className="detail-main-card">
                 <div className="detail-header-row">
                   <div>
-                    <span className="thread-meta">Iniciado por <b>@{postDetail.author}</b></span>
+                    <span className="thread-meta">Started by <b>@{postDetail.author}</b></span>
                     <h2 style={{ margin: '6px 0 10px 0', color: '#0f172a' }}>{postDetail.title}</h2>
                   </div>
                   
@@ -316,14 +316,14 @@ export default function CommunityForum() {
                         color: isBookmarked ? '#2563eb' : '#475569',
                         borderColor: isBookmarked ? '#2563eb' : '#cbd5e1'
                       }} 
-                      title={isBookmarked ? "Quitar de guardados" : "Guardar post"}
+                      title={isBookmarked ? "Remove from bookmarks" : "Bookmark post"}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
                         {isBookmarked ? 'bookmark' : 'bookmark_border'}
                       </span>
                     </button>
 
-                    <button onClick={handleUpvote} className="upvote-btn" title="Apoyar hilo">
+                    <button onClick={handleUpvote} className="upvote-btn" title="Upvote thread">
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>thumb_up</span>
                       <span>{postDetail.upvotes}</span>
                     </button>
@@ -331,7 +331,7 @@ export default function CommunityForum() {
                 </div>
 
                 <div className="detail-summary-box">
-                  <strong>Resumen IA: </strong>{postDetail.summary}
+                  <strong>AI Summary: </strong>{postDetail.summary}
                 </div>
 
                 <div className="tags-container" style={{ marginBottom: '14px' }}>
@@ -345,7 +345,7 @@ export default function CommunityForum() {
 
               <div className="comments-section">
                 <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>
-                  Respuestas ({postDetail.comments ? postDetail.comments.length : 0})
+                  Replies ({postDetail.comments ? postDetail.comments.length : 0})
                 </h3>
 
                 <div className="comments-list">
@@ -357,14 +357,14 @@ export default function CommunityForum() {
                       </div>
                     ))
                   ) : (
-                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Aún no hay comentarios. Sé el primero en responder.</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>No comments yet. Be the first to reply.</p>
                   )}
                 </div>
 
                 <form onSubmit={handleAddComment} className="comment-form">
                   <textarea
                     rows="3"
-                    placeholder={isAuthenticated ? "Añadir una respuesta o aportar fuentes..." : "Inicia sesión para responder a este thread..."}
+                    placeholder={isAuthenticated ? "Add a reply or provide verified sources..." : "Log in to reply to this thread..."}
                     value={newCommentText}
                     onChange={(e) => setNewCommentText(e.target.value)}
                     className="modal-textarea"
@@ -373,7 +373,7 @@ export default function CommunityForum() {
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button type="submit" className="btn-primary">
                       <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>send</span>
-                      Comentar
+                      Comment
                     </button>
                   </div>
                 </form>
@@ -383,15 +383,15 @@ export default function CommunityForum() {
         </div>
       )}
 
-      {/* MODAL SIMPLIFICADO: SÓLO EL MENSAJE */}
+      {/* SIMPLIFIED MODAL: PROMPT ONLY */}
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Iniciar Nuevo Thread</h3>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Start New Thread</h3>
             <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <textarea
                 rows="5"
-                placeholder="Escribe tu mensaje, caso o información a debatir (Gemini generará el título, resumen y tags automáticamente)..."
+                placeholder="Write your message, claim, or media context to debate (Gemini will automatically generate the title, summary, and tags)..."
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 className="modal-textarea"
@@ -402,10 +402,10 @@ export default function CommunityForum() {
 
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn-secondary" disabled={creating}>
-                  Cancelar
+                  Cancel
                 </button>
                 <button type="submit" className="btn-primary" disabled={creating || !newContent.trim()}>
-                  {creating ? 'Procesando con IA...' : 'Publicar'}
+                  {creating ? 'Processing with AI...' : 'Publish'}
                 </button>
               </div>
             </form>
@@ -413,7 +413,7 @@ export default function CommunityForum() {
         </div>
       )}
 
-      {/* MODAL DE LOGIN */}
+      {/* AUTH MODAL */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );

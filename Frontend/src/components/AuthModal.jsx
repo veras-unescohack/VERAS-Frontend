@@ -19,12 +19,12 @@ export default function AuthModal({ isOpen, onClose }) {
     setError('');
 
     if (username.trim().length < 3 || username.trim().length > 30) {
-      setError('El usuario debe tener entre 3 y 30 caracteres.');
+      setError('Username must be between 3 and 30 characters.');
       return;
     }
 
     if (password.length < 4) {
-      setError('La contraseña debe tener al menos 4 caracteres.');
+      setError('Password must be at least 4 characters long.');
       return;
     }
 
@@ -43,7 +43,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || 'Error en la autenticación');
+        throw new Error(data.detail || 'Authentication failed');
       }
 
       login(data.access_token, data.username);
@@ -61,7 +61,7 @@ export default function AuthModal({ isOpen, onClose }) {
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: '380px' }}>
         <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
-          {isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}
+          {isRegister ? 'Create Account' : 'Sign In'}
         </h3>
 
         {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
@@ -70,7 +70,7 @@ export default function AuthModal({ isOpen, onClose }) {
           <div>
             <input
               type="text"
-              placeholder="Usuario"
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="modal-input"
@@ -79,14 +79,14 @@ export default function AuthModal({ isOpen, onClose }) {
               required
             />
             <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '3px' }}>
-              Longitud: 3 a 30 caracteres (sin espacios).
+              Length: 3 to 30 characters (no spaces).
             </span>
           </div>
 
           <div>
             <input
               type="password"
-              placeholder="Contraseña"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="modal-input"
@@ -94,7 +94,7 @@ export default function AuthModal({ isOpen, onClose }) {
               required
             />
             <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '3px' }}>
-              Mínimo 4 caracteres.
+              Minimum 4 characters.
             </span>
           </div>
 
@@ -104,16 +104,16 @@ export default function AuthModal({ isOpen, onClose }) {
               onClick={() => { setIsRegister(!isRegister); setError(''); }}
               style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.82rem', cursor: 'pointer', padding: 0 }}
             >
-              {isRegister ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+              {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
             </button>
           </div>
 
           <div className="modal-actions">
             <button type="button" onClick={onClose} className="btn-secondary" disabled={loading}>
-              Cancelar
+              Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Procesando...' : isRegister ? 'Registrarse' : 'Entrar'}
+              {loading ? 'Processing...' : isRegister ? 'Sign Up' : 'Sign In'}
             </button>
           </div>
         </form>

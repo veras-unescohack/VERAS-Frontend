@@ -118,7 +118,7 @@ export default function MediaBreakdown() {
             rows="4"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Pega el texto, afirmación o contexto que deseas someter a análisis crítico..."
+            placeholder="Describe the media content you want to analyze..."
             className="prompt-textarea"
             disabled={loading}
           />
@@ -160,14 +160,14 @@ export default function MediaBreakdown() {
               style={{ cursor: 'pointer' }}
             />
             <label htmlFor="isPublicConsent" style={{ cursor: 'pointer' }}>
-              Permitir que este análisis aparezca de forma anónima en el <b>Feed Global</b> de la comunidad.
+              Allow this analysis to appear on the community's <b>Global Feed</b>.
             </label>
           </div>
 
           <div className="form-actions">
             <label className="file-upload-label">
               <span className="material-symbols-outlined">attach_file</span>
-              <span>{file ? "Cambiar archivo" : "Adjuntar PDF o Imagen"}</span>
+              <span>{file ? "Change file" : "Attach file"}</span>
               <input
                 type="file"
                 accept=".png, .jpg, .jpeg, .pdf"
@@ -183,7 +183,7 @@ export default function MediaBreakdown() {
               className="submit-btn"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
-              <span>{loading ? 'Analizando...' : processingFile ? 'Comprimiendo...' : 'Generar'}</span>
+              <span>{loading ? 'Analyzing...' : processingFile ? 'Compressing...' : 'Submit'}</span>
             </button>
           </div>
         </form>
@@ -191,18 +191,18 @@ export default function MediaBreakdown() {
         <div className="dashboard-card">
           <div className="dashboard-header">
             <div>
-              <span className="request-id">ID DE ANÁLISIS: {dashboardData.request_id}</span>
-              <h3 className="dashboard-title">Inspección y Alfabetización Mediática</h3>
+              <span className="request-id">ID: {dashboardData.request_id}</span>
+              {/* <h3 className="dashboard-title">Inspección y Alfabetización Mediática</h3> */}
             </div>
             <button onClick={handleReset} className="reset-btn">
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
-              Nueva consulta
+              New analysis
             </button>
           </div>
 
           {/* Consulta Evaluada */}
           <div className="user-prompt-box">
-            <span className="user-prompt-label">Consulta Evaluada</span>
+            <span className="user-prompt-label">Succesfull Request</span>
             <p className="user-prompt-text">{dashboardData.prompt_received}</p>
           </div>
 
@@ -210,7 +210,7 @@ export default function MediaBreakdown() {
           <section className="section-block">
             <h4 className="section-heading">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>subject</span>
-              Resumen Objetivo
+              Objective Summary
             </h4>
             <p className="section-text">{dashboardData.neutral_summary}</p>
           </section>
@@ -219,7 +219,7 @@ export default function MediaBreakdown() {
           <section className="section-block">
             <h4 className="section-heading">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>find_in_page</span>
-              Factores de Análisis Crítico
+              Critical Analysis Factors
             </h4>
             <div className="critical-list">
               {dashboardData.critical_analysis_points?.map((point, index) => (
@@ -235,7 +235,7 @@ export default function MediaBreakdown() {
           <section className="educational-box">
             <h4 className="educational-heading">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>school</span>
-              Criterio de Evaluación Futura
+              Extra Fact
             </h4>
             <p className="educational-text">{dashboardData.educational_insights}</p>
           </section>
@@ -244,7 +244,7 @@ export default function MediaBreakdown() {
           <section>
             <h4 className="section-heading">
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>checklist</span>
-              Ruta de Verificación y Seguridad
+              Verification and Safety Route
             </h4>
             <div className="actions-grid">
               {dashboardData.recommended_actions?.map((act, index) => (

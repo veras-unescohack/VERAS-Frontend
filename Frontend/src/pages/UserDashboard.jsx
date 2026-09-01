@@ -78,23 +78,23 @@ export default function UserDashboard() {
           <span className="material-symbols-outlined stat-icon">analytics</span>
           <div>
             <div className="stat-value">{myBreakdowns.length}</div>
-            <div className="stat-label">Análisis personales</div>
+            <div className="stat-label">Personal analysis</div>
           </div>
         </div>
         <div className="stat-card">
           <span className="material-symbols-outlined stat-icon">bookmark</span>
           <div>
             <div className="stat-value">{savedThreads.length}</div>
-            <div className="stat-label">Threads guardados</div>
+            <div className="stat-label">Saved threads</div>
           </div>
         </div>
-        <div className="stat-card">
+        {/* <div className="stat-card">
           <span className="material-symbols-outlined stat-icon">verified</span>
           <div>
             <div className="stat-value">Nivel 1</div>
             <div className="stat-label">Verificador Cívico</div>
           </div>
-        </div>
+        </div> */}
       </section>
 
       {/* Navegación por pestañas */}
@@ -103,19 +103,19 @@ export default function UserDashboard() {
           className={`tab-btn ${activeTab === 'global' ? 'active' : ''}`}
           onClick={() => setActiveTab('global')}
         >
-          Explorar Global
+          Global
         </button>
         <button
           className={`tab-btn ${activeTab === 'my-breakdowns' ? 'active' : ''}`}
           onClick={() => setActiveTab('my-breakdowns')}
         >
-          Mis Análisis ({myBreakdowns.length})
+          My analyses ({myBreakdowns.length})
         </button>
         <button
           className={`tab-btn ${activeTab === 'saved-threads' ? 'active' : ''}`}
           onClick={() => setActiveTab('saved-threads')}
         >
-          Guardados ({savedThreads.length})
+          Saved ({savedThreads.length})
         </button>
       </div>
 
