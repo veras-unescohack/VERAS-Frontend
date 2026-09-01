@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { processAndValidateFile } from '../utils/fileCompressor';
 import { useAuth } from '../context/AuthContext';
 import './../styles/breakdown.css';
@@ -15,8 +15,18 @@ export default function MediaBreakdown() {
   const [isPublic, setIsPublic] = useState(false);
   const [processingFile, setProcessingFile] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isQueued, setIsQueued] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
+
+  const pollingRef = useRef(null);
+
+  // Limpiar interval al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
 
   const handleFileChange = async (e) => {
     const rawFile = e.target.files[0];
@@ -56,6 +66,31 @@ export default function MediaBreakdown() {
     setPreviewUrl(null);
   };
 
+  const startPolling = (requestId) => {
+    setIsQueued(true);
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/breakdown/${requestId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'completed') {
+            clearInterval(pollingRef.current);
+            setDashboardData(data);
+            setIsQueued(false);
+            setLoading(false);
+          } else if (data.status === 'failed') {
+            clearInterval(pollingRef.current);
+            setErrorMsg('El procesamiento del análisis no pudo completarse.');
+            setIsQueued(false);
+            setLoading(false);
+          }
+        }
+      } catch (e) {
+        console.warn('Error en polling de breakdown:', e);
+      }
+    }, 10000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!prompt.trim() || processingFile) return;
@@ -89,6 +124,13 @@ export default function MediaBreakdown() {
 
       const data = await response.json();
       setDashboardData(data);
+      if (data.status === 'processing') {
+        startPolling(data.request_id);
+      } else {
+        setDashboardData(data);
+        setLoading(false);
+      }
+
     } catch (err) {
       setErrorMsg(err.message || 'No fue posible conectar con el backend. Intenta de nuevo más tarde.');
     } finally {
@@ -97,11 +139,14 @@ export default function MediaBreakdown() {
   };
 
   const handleReset = () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
     handleRemoveFile();
     setDashboardData(null);
     setPrompt('');
     setIsPublic(false);
     setErrorMsg('');
+    setIsQueued(false);
+    setLoading(false);
   };
 
   return (
@@ -111,6 +156,30 @@ export default function MediaBreakdown() {
       </header>
 
       {errorMsg && <div className="error-banner">{errorMsg}</div>}
+
+      {/* Banner de Estado Encolado / Asíncrono */}
+      {isQueued && (
+        <div style={{
+          backgroundColor: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          borderRadius: '8px',
+          padding: '16px',
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'center',
+          marginBottom: '16px'
+        }}>
+          <span className="material-symbols-outlined" style={{ color: '#2563eb', fontSize: '24px' }}>
+            hourglass_top
+          </span>
+          <div style={{ fontSize: '0.9rem', color: '#1e3a8a' }}>
+            <strong>Tu análisis ha sido puesto en cola de procesamiento.</strong>
+            <p style={{ margin: '2px 0 0 0', color: '#3b82f6', fontSize: '0.82rem' }}>
+              La IA está evaluando el contenido. Puedes esperar aquí o cerrar esta ventana y consultarlo más tarde en tu <b>Dashboard</b>.
+            </p>
+          </div>
+        </div>
+      )}
 
       {!dashboardData ? (
         <form onSubmit={handleSubmit} className="breakdown-form">
@@ -183,7 +252,7 @@ export default function MediaBreakdown() {
               className="submit-btn"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
-              <span>{loading ? 'Analyzing...' : processingFile ? 'Compressing...' : 'Submit'}</span>
+              <span>{loading ? (isQueued ? 'Processing Queue...' : 'Queueing...') : 'Generate'}</span>
             </button>
           </div>
         </form>

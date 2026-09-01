@@ -14,7 +14,7 @@ export default function About() {
         </p>
         <div className="hero-actions">
           <Link to="/breakdown" className="primary-cta-btn">
-            Test Breakdown Inspector
+            Test App
             <span className="material-symbols-outlined">rocket_launch</span>
           </Link>
         </div>
